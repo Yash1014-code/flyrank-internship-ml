@@ -1,1 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Prioritizing Content Refreshes with Future CTR</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.7;
+      color: #1f2937;
+      background: #f6f7f9;
+    }
+
+    .container {
+      max-width: 950px;
+      margin: auto;
+      padding: 30px 20px 60px;
+    }
+
+    header,
+    section,
+    footer {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    header {
+      padding: 38px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      margin-top: 0;
+    }
+
+    h2 {
+      margin-top: 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    h3 {
+      margin-top: 28px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 1.05rem;
+    }
+
+    .abstract {
+      margin-top: 28px;
+      padding: 22px;
+      background: #f3f6fb;
+      border-left: 4px solid #2563eb;
+      border-radius: 6px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 24px 0;
+    }
+
+    .metric {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 18px;
+      background: #fafafa;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.45rem;
+    }
+
+    .metric span {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th,
+    td {
+      border: 1px solid #d1d5db;
+      padding: 11px;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+    }
+
+    figure {
+      margin: 32px 0;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      max-width: 850px;
+      height: auto;
+      margin: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    figcaption {
+      margin-top: 10px;
+      color: #6b7280;
+      font-size: 0.95rem;
+    }
+
+    .takeaway {
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    code {
+      background: #f3f4f6;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    a {
+      color: #2563eb;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    footer {
+      color: #6b7280;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 15px 10px 40px;
+      }
+
+      header,
+      section,
+      footer {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.9rem;
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- ===================================================== -->
+  <!-- 1. TITLE + ABSTRACT -->
+  <!-- ===================================================== -->
+
+  <header>
+
+    <h1>Can Machine Learning Improve Content Refresh Prioritization?</h1>
+
+    <p class="subtitle">
+      A time-aware Random Forest workflow for ranking pages for human review.
+    </p>
+
+    <div class="abstract">
+
+      <h2>1. Title + Abstract</h2>
+
+      <p>
+        This project asks whether a learned ranking model can improve the prioritization
+        of web pages for content-refresh review compared with a transparent baseline.
+        The analysis uses FlyRank's pseudonymized content-performance warehouse and
+        evaluates page-level future CTR using information available before the future
+        evaluation window.
+        A Random Forest regressor was developed using a chronological February-to-March
+        development window and evaluated on a March-to-April future window.
+        The Random Forest achieved a Spearman rank correlation of 0.17427 compared with
+        0.169878 for the Week-4 baseline, with MAE of 0.004545 and RMSE of 0.02583 on
+        the evaluated CTR target.
+        The resulting ranking is intended as directional decision support for human
+        review rather than as a causal guarantee or an automatic content-refresh system.
+      </p>
+
+    </div>
+
+  </header>
+
+
+  <!-- ===================================================== -->
+  <!-- 2. INTRODUCTION / PROBLEM -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>2. Introduction / Problem</h2>
+
+    <p>
+      Content teams often have more pages available for review than they can update
+      at the same time. The practical problem is therefore how to decide which pages
+      should receive attention first.
+    </p>
+
+    <p>
+      This project frames the task as a ranking problem. Instead of attempting to
+      automatically decide whether a page should be changed, the system produces a
+      prioritized queue that helps a human reviewer allocate limited editorial
+      attention.
+    </p>
+
+    <p>
+      The central research question is:
+    </p>
+
+    <p>
+      <strong>
+        Can a learned Random Forest ranking provide useful future-performance
+        prioritization beyond the transparent Week-4 baseline?
+      </strong>
+    </p>
+
+    <p>
+      The distinction between prediction and causation is important. A page receiving
+      a high ranking does not mean that refreshing that page will necessarily cause
+      its future performance to improve.
+    </p>
+
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 3. DATA -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>3. Data</h2>
+
+    <p>
+      The analysis uses the FlyRank pseudonymized ML Internship dataset and its
+      content-performance warehouse. The public research page reports aggregate
+      information only and does not expose client names, raw URLs, private queries,
+      or other private identifiers.
+    </p>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Dataset component</th>
+          <th>Rows</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td><code>fact_content_daily_performance</code></td>
+          <td>78,835,655</td>
+          <td>Daily content-performance signals</td>
+        </tr>
+
+        <tr>
+          <td><code>dim_content</code></td>
+          <td>519,606</td>
+          <td>Content metadata</td>
+        </tr>
+
+        <tr>
+          <td><code>dim_clients</code></td>
+          <td>104</td>
+          <td>Pseudonymized client metadata</td>
+        </tr>
+
+        <tr>
+          <td><code>fact_content_query_90d</code></td>
+          <td>2,414,248</td>
+          <td>Aggregated query-level search information</td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+    <h3>Time windows</h3>
+
+    <ul>
+      <li><strong>February → March 2026:</strong> development period.</li>
+      <li><strong>March → April 2026:</strong> future evaluation period.</li>
+    </ul>
+
+    <p>
+      The final future evaluation contained <strong>158,549 rows</strong>.
+      The chronological design was used to preserve the distinction between
+      information available for development and information observed later.
+    </p>
+
+    <h3>Public-safety exclusions</h3>
+
+    <p>
+      The published page intentionally excludes client names, raw URLs, private
+      search queries, credentials, and other sensitive identifiers. The research
+      page reports aggregate findings rather than exposing individual private
+      records.
+    </p>
+
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 4. METHODOLOGY -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>4. Methodology</h2>
+
+    <h3>Target</h3>
+
+    <p>
+      The learned model predicts future CTR for the evaluation window using signals
+      available before that window. The resulting predictions are converted into
+      a ranking for review prioritization.
+    </p>
+
+    <h3>Model</h3>
+
+    <p>
+      The main learned model is a <strong>Random Forest Regressor</strong>.
+      The model uses historical search-performance and content-related signals to
+      estimate future CTR.
+    </p>
+
+    <h3>Features</h3>
+
+    <p>
+      Important signals included historical search-performance measurements such as
+      impressions, clicks, CTR, and average search position, together with available
+      content and analytics signals.
+    </p>
+
+    <p>
+      The feature-importance analysis indicated that average position, impressions,
+      and clicks were among the strongest reported signals. GA4 session and scroll
+      signals contributed comparatively little in the reported model.
+    </p>
+
+    <h3>Baseline</h3>
+
+    <p>
+      The model was compared with the transparent Week-4 prioritization baseline.
+      The baseline provides a simple reference point so that the learned model is
+      not evaluated in isolation.
+    </p>
+
+    <h3>Validation design</h3>
+
+    <p>
+      The evaluation follows a chronological design: development uses the earlier
+      February-to-March period, while final evaluation uses the later March-to-April
+      period.
+    </p>
+
+    <p>
+      This design is intended to better represent the forward-looking setting in
+      which a prioritization model would be used.
+    </p>
+
+    <h3>Leakage checks</h3>
+
+    <ul>
+      <li>
+        Future evaluation information was kept separate from model-development
+        features.
+      </li>
+
+      <li>
+        Target-like or future-derived signals were treated as potential leakage
+        sources.
+      </li>
+
+      <li>
+        The evaluation was performed on a later time window rather than relying
+        only on a random row split.
+      </li>
+
+      <li>
+        Results are interpreted as predictive associations rather than causal
+        effects of content refreshes.
+      </li>
+    </ul>
+
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 5. RESULTS -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>5. Results</h2>
+
+    <p>
+      The Random Forest was evaluated on the March-to-April future window.
+      The baseline and model ranking were compared on the same evaluation population.
+    </p>
+
+    <div class="metric-grid">
+
+      <div class="metric">
+        <strong>0.17427</strong>
+        <span>Random Forest Spearman</span>
+      </div>
+
+      <div class="metric">
+        <strong>0.169878</strong>
+        <span>Week-4 baseline Spearman</span>
+      </div>
+
+      <div class="metric">
+        <strong>158,549</strong>
+        <span>Evaluation rows</span>
+      </div>
+
+    </div>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Week-4 Baseline</th>
+          <th>Random Forest</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td>Spearman rank correlation</td>
+          <td>0.169878</td>
+          <td>0.17427</td>
+        </tr>
+
+        <tr>
+          <td>MAE</td>
+          <td>Not reported</td>
+          <td>0.004545</td>
+        </tr>
+
+        <tr>
+          <td>RMSE</td>
+          <td>Not reported</td>
+          <td>0.02583</td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+    <p>
+      The Random Forest produced a modestly higher Spearman rank correlation than
+      the transparent baseline in the measured future evaluation.
+    </p>
+
+    <h3>Top-ranked pages</h3>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Model-ranked group</th>
+          <th>Mean future CTR</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td>Top 20</td>
+          <td>0.065211</td>
+        </tr>
+
+        <tr>
+          <td>Top 100</td>
+          <td>0.055425</td>
+        </tr>
+
+        <tr>
+          <td>Top 500</td>
+          <td>0.034707</td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+
+    <figure>
+
+      <img
+        src="figures/w08_model_vs_baseline.png"
+        alt="Random Forest model versus Week-4 baseline"
+      >
+
+      <figcaption>
+        <strong>Chart 1 — Model versus baseline.</strong>
+        Comparison of the learned Random Forest ranking with the Week-4 baseline
+        on the future evaluation.
+      </figcaption>
+
+      <p class="takeaway">
+        Takeaway: the Random Forest showed a modest improvement in measured rank
+        correlation over the transparent baseline.
+      </p>
+
+    </figure>
+
+
+    <figure>
+
+      <img
+        src="figures/w08_feature_importance.png"
+        alt="Random Forest feature importance"
+      >
+
+      <figcaption>
+        <strong>Chart 2 — Feature importance.</strong>
+        Reported Random Forest feature importance, showing the relative contribution
+        of the available modeling signals.
+      </figcaption>
+
+      <p class="takeaway">
+        Takeaway: average position, impressions, and clicks were among the strongest
+        reported model signals.
+      </p>
+
+    </figure>
+
+
+    <figure>
+
+      <img
+        src="figures/w07_action_distribution.png"
+        alt="Week 7 action queue reason-code distribution"
+      >
+
+      <figcaption>
+        <strong>Chart 3 — Action queue reason codes.</strong>
+        Distribution of the reason codes used to turn the ranking into a human-review
+        action queue.
+      </figcaption>
+
+      <p class="takeaway">
+        Takeaway: the ranking is translated into explainable review prompts rather
+        than automatic content actions.
+      </p>
+
+    </figure>
+
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 6. LIMITATIONS & HONEST FRAMING -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>6. Limitations &amp; Honest Framing</h2>
+
+    <p>
+      The measured improvement over the baseline is modest. The Random Forest's
+      Spearman correlation was 0.17427 compared with 0.169878 for the Week-4
+      baseline.
+    </p>
+
+    <ul>
+
+      <li>
+        The analysis measures predictive ranking performance, not the causal effect
+        of refreshing a page.
+      </li>
+
+      <li>
+        A high-ranked page should be interpreted as a page that deserves earlier
+        review, not as a page guaranteed to improve after editing.
+      </li>
+
+      <li>
+        The results come from a particular historical evaluation window and should
+        be revalidated when new data becomes available.
+      </li>
+
+      <li>
+        Historical search-performance data cannot capture every factor that may
+        affect future search behaviour.
+      </li>
+
+      <li>
+        The model should not be treated as an automatic content-publishing or
+        content-deletion system.
+      </li>
+
+    </ul>
+
+    <p>
+      The appropriate interpretation is therefore
+      <strong>directional decision support for human review</strong>.
+    </p>
+
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 7. RANKED RECOMMENDATIONS -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>7. Ranked Recommendations</h2>
+
+    <ol>
+
+      <li>
+        <strong>Review the highest-ranked pages first.</strong>
+        Use the ranking to allocate limited editorial review time toward the
+        pages appearing at the top of the queue.
+      </li>
+
+      <li>
+        <strong>Inspect the reason code and supporting metrics.</strong>
+        Treat the reason code as a review prompt and examine the page's search
+        visibility, clicks, impressions, CTR, and position before taking action.
+      </li>
+
+      <li>
+        <strong>Apply editorial judgment.</strong>
+        Decide whether a refresh is actually appropriate after reviewing the
+        page context. The model should not make the final content decision.
+      </li>
+
+      <li>
+        <strong>Monitor future performance.</strong>
+        After any human-approved content change, compare later performance with
+        the expected direction and use the evidence to improve future prioritization.
+      </li>
+
+      <li>
+        <strong>Revalidate before wider operational use.</strong>
+        Repeat the evaluation on newer time windows before relying on the ranking
+        for a different production period.
+      </li>
+
+    </ol>
+
+    <h3>Human-review checklist</h3>
+
+    <ol>
+
+      <li>Open the highest-ranked page.</li>
+      <li>Read the associated reason code.</li>
+      <li>Check impressions, clicks, CTR, and average position.</li>
+      <li>Inspect content freshness and page context.</li>
+      <li>Decide whether a refresh is appropriate.</li>
+      <li>Record the human decision and rationale.</li>
+
+    </ol>
+
+    <p>
+      <strong>No-go automation:</strong>
+      the system should not automatically publish, rewrite, delete, or refresh
+      content based only on the model ranking.
+    </p>
+
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 8. REPRODUCIBILITY -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>8. Reproducibility</h2>
+
+    <p>
+      The analysis is stored in the project repository so that the workflow,
+      notebooks, outputs, and figures can be inspected.
+    </p>
+
+    <ul>
+
+      <li>
+        <strong>Repository:</strong>
+        <a
+          href="https://github.com/Yash1014-code/flyrank-internship-ml"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Yash1014-code/flyrank-internship-ml
+        </a>
+      </li>
+
+      <li>
+        <strong>Capstone notebook:</strong>
+        <code>work/notebooks/capstone.ipynb</code>
+      </li>
+
+      <li>
+        <strong>Week 7 action playbook:</strong>
+        <code>work/notebooks/</code>
+      </li>
+
+      <li>
+        <strong>Model and queue outputs:</strong>
+        <code>work/outputs/</code>
+      </li>
+
+      <li>
+        <strong>Figures:</strong>
+        <code>work/figures/</code>
+      </li>
+
+    </ul>
+
+    <p>
+      The reported results should be reproduced from the committed notebooks and
+      project artifacts rather than from manually entered values on this page.
+    </p>
+
+    <p>
+      The evaluation uses the documented chronological development and future
+      evaluation windows, with the same evaluation population used for model
+      and baseline comparison.
+    </p>
+
+  </section>
+
+
+  <!-- ===================================================== -->
+  <!-- 9. ACKNOWLEDGMENTS & DATA CREDIT -->
+  <!-- ===================================================== -->
+
+  <section>
+
+    <h2>9. Acknowledgments &amp; Data Credit</h2>
+
+    <p>
+      This project was completed as part of the FlyRank ML Internship.
+    </p>
+
+    <p>
+      Built on the
+      <a
+        href="https://flyrank.ai"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        FlyRank ML Internship dataset
+      </a>.
+    </p>
+
+    <p>
+      The public research page uses pseudonymized data and intentionally avoids
+      exposing client names, raw URLs, private queries, credentials, or other
+      private information.
+    </p>
+
+  </section>
+
+
+  <footer>
+
+    <p>
+      <strong>Research framing:</strong>
+      observed and measured results from the evaluated data and validation design.
+      The system is intended for directional decision support and human review.
+    </p>
+
+    <p>
+      FlyRank ML Internship — Capstone Research
+    </p>
+
+  </footer>
+
+</div>
+
+</body>
+</html>
